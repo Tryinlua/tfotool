@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TFO Tools — WPLACE Suite Ultimate</title>
+    <style>
+        :root {
+            --bg-dark: #080b11;
+            --panel-bg: #111827;
+            --panel-border: #1f293d;
+            --accent: #3b82f6;
+            --accent-hover: #60a5fa;
+            --text-main: #f3f4f6;
+            --text-sub: #9ca3af;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- CONNEXION --- */
+        #loginOverlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 11, 17, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 30px;
+            border-radius: 16px;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            text-align: center;
+        }
+
+        .login-card h2 { font-size: 1.4rem; color: #fff; }
+        .login-card p { font-size: 0.8rem; color: var(--text-sub); }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            text-align: left;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        input[type="text"], input[type="password"], input[type="number"], input[type="datetime-local"], select {
+            background: #080b11;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            color: #fff;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            outline: none;
+            width: 100%;
+        }
+
+        input:focus, select:focus { border-color: var(--accent); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+
+        /* --- LAYOUT --- */
+        .sidebar {
+            width: 260px;
+            background-color: #0d131f;
+            border-right: 1px solid var(--panel-border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+            z-index: 20;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .brand-logo .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            font-weight: 900;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .brand-logo h1 { font-size: 1.3rem; font-weight: 800; color: #fff; }
+
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-sub);
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .nav-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            border-radius: 10px;
+            color: var(--text-sub);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item:hover { background: rgba(255, 255, 255, 0.03); color: #fff; }
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--accent-hover);
+            border-color: rgba(59, 130, 246, 0.3);
+            font-weight: 600;
+        }
+
+        .user-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--panel-border);
+            padding-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        header {
+            height: 60px;
+            border-bottom: 1px solid var(--panel-border);
+            background: #0d131f;
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            flex-shrink: 0;
+        }
+
+        header h2 { font-size: 1rem; font-weight: 600; }
+
+        .page-view {
+            flex: 1;
+            display: none;
+            height: calc(100vh - 60px);
+            overflow: hidden;
+        }
+        .page-view.active { display: flex; }
+
+        /* --- CONVERTISSEUR VIEW --- */
+        .workspace {
+            width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+        }
+
+        .controls-panel {
+            background: var(--panel-bg);
+            border-right: 1px solid var(--panel-border);
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .control-block { display: flex; flex-direction: column; gap: 10px; }
+        .control-block h3 { font-size: 0.8rem; text-transform: uppercase; color: var(--text-sub); font-weight: 700; }
+
+        .dropzone {
+            border: 2px dashed var(--panel-border);
+            border-radius: 12px;
+            padding: 20px 15px;
+            text-align: center;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .dropzone:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+        .dropzone input { display: none; }
+
+        .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; }
+
+        .palette-filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+        .btn-filter {
+            background: #080b11;
+            border: 1px solid var(--panel-border);
+            color: var(--text-sub);
+            padding: 6px 4px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            cursor: pointer;
+        }
+
+        .palette-scroll {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            background: #080b11;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .color-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 8px; border-radius: 6px; cursor: pointer; }
+        .color-row:hover { background: rgba(255, 255, 255, 0.04); }
+        .color-row.selected-draw { border: 1px solid var(--accent); background: rgba(59, 130, 246, 0.15); }
+        .color-left { display: flex; align-items: center; gap: 10px; }
+        .color-swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .badge-type { font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; }
+        .type-free { color: #34d399; background: rgba(52, 211, 153, 0.1); }
+        .type-pay { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+
+        .btn-group { display: flex; gap: 8px; }
+        .btn-sm {
+            flex: 1;
+            background: #080b11;
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-sm:hover { border-color: var(--accent); }
+        .btn-sm.active { background: var(--accent); border-color: var(--accent); }
+
+        .preview-area {
+            background: #06080d;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .canvas-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                linear-gradient(45deg, #0d121d 25%, transparent 25%), 
+                linear-gradient(-45deg, #0d121d 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #0d121d 75%), 
+                linear-gradient(-45deg, transparent 75%, #0d121d 75%);
+            background-size: 20px 20px;
+            padding: 40px;
+            overflow: auto;
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            border-radius: 4px;
+            width: var(--zoom-size, 600px) !important;
+            height: auto !important;
+            object-fit: contain;
+            transition: width 0.1s ease;
+        }
+        canvas.edit-mode { cursor: crosshair; }
+
+        .toolbar-bottom {
+            position: absolute;
+            bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(17, 24, 39, 0.9);
+            border: 1px solid var(--panel-border);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 30px;
+            z-index: 10;
+        }
+        .stat-item { font-size: 0.8rem; color: var(--text-sub); }
+        .stat-item strong { color: #fff; }
+
+        .btn-action {
+            background: var(--success);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        /* --- PARTAGE VIEW --- */
+        .share-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .share-header { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+        .share-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+        .template-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .template-preview-box {
+            width: 100%;
+            height: 150px;
+            background: #080b11;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--panel-border);
+        }
+        .template-preview-box img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+
+        .template-actions { display: flex; gap: 8px; }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--panel-border);
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* --- CALCULATEUR VIEW --- */
+        .calc-container {
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .calc-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 16px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        .calc-result-box {
+            background: #080b11;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .result-status {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+        .status-yes { color: var(--success); }
+        .status-no { color: var(--warning); }
+
+        /* MODAL */
+        #previewModal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(8, 11, 17, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-hover);
+            font-weight: 700;
+            z-index: 30;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <!-- CONNEXION -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>Connexion TFO</h2>
+            <p>Compte de test : <strong>test</strong> / <strong>test</strong></p>
+            <div class="form-group">
+                <label>Nom d'utilisateur</label>
+                <input type="text" id="usernameInput" placeholder="ex: test, Antoine...">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="passwordInput" placeholder="••••••••">
+            </div>
+            <button class="btn-primary" id="loginBtn">Se connecter</button>
+            <p id="loginError" style="color: var(--danger); font-size: 0.8rem;" class="hidden">Identifiants incorrects !</p>
+        </div>
+    </div>
+
+    <!-- MODAL APERÇU -->
+    <div id="previewModal" class="hidden">
+        <div class="modal-content">
+            <h3 id="modalTitle">Aperçu du Template</h3>
+            <div style="background:#080b11; padding:10px; border-radius:8px; width:100%; display:flex; justify-content:center;">
+                <img id="modalImg" src="" alt="Aperçu">
+            </div>
+            <button class="btn-primary" onclick="document.getElementById('previewModal').classList.add('hidden')">Fermer</button>
+        </div>
+    </div>
+
+    <!-- MENU LATÉRAL -->
+    <div class="sidebar">
+        <div class="brand-logo">
+            <div class="logo-icon">T</div>
+            <h1>TFO Tools</h1>
+        </div>
+        <div class="nav-section-title">Navigation</div>
+        <div class="nav-list">
+            <a href="#" class="nav-item active" data-target="converterView">Convertisseur WPLACE</a>
+            <a href="#" class="nav-item" data-target="shareView">Espace Partage (Templates)</a>
+            <a href="#" class="nav-item" data-target="calcView">Calculateur de Raid</a>
+        </div>
+
+        <div class="user-footer">
+            <span>Compte : <strong id="currentUserName">test</strong></span>
+            <button class="logout-btn" id="logoutBtn">Déconnexion</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+        <header>
+            <h2 id="headerTitle">Convertisseur WPLACE</h2>
+        </header>
+
+        <!-- PAGE 1 : CONVERTISSEUR -->
+        <div id="converterView" class="page-view active">
+            <div class="workspace">
+                <div class="controls-panel">
+                    <div class="control-block">
+                        <h3>1. Image Source</h3>
+                        <div class="dropzone" id="dropzone">
+                            <span style="font-size: 0.85rem; font-weight: 600;">Glisser-déposer une image</span>
+                            <p style="font-size: 0.75rem; color: var(--text-sub); margin-top: 4px;">ou cliquer pour parcourir</p>
+                            <input type="file" id="fileInput" accept="image/*">
+                        </div>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>2. Dimensions (Pixels)</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="pixelRange" min="10" max="1000" value="120" style="flex:1;">
+                            <input type="number" id="pixelInput" value="120" min="1" max="3000" style="width: 80px;">
+                        </div>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>3. Algorithme de Couleurs</h3>
+                        <select id="algoSelect">
+                            <option value="ciede2000">CIEDE2000 (Perception ultra-précise)</option>
+                            <option value="cielab">CIELAB (Standard équilibré)</option>
+                            <option value="redmean">RGB Pondéré (Redmean)</option>
+                            <option value="rgb">RGB Euclidien</option>
+                            <option value="manhattan">Manhattan (Distance L1)</option>
+                        </select>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>4. Ajustement Luminosité</h3>
+                        <div class="btn-group">
+                            <button class="btn-sm" id="btnBrighter">☀️ Plus clair</button>
+                            <button class="btn-sm" id="btnDarker">🌙 Plus sombre</button>
+                        </div>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>5. Mode Édition à la main</h3>
+                        <button class="btn-sm" id="btnEditMode" style="width:100%;">✏️ Activer Edit Mode</button>
+                        <div id="editTools" class="hidden" style="display:flex; gap:8px; margin-top:5px;">
+                            <button class="btn-sm active" id="toolPencil">✏️ Crayon</button>
+                            <button class="btn-sm" id="toolEraser">🧹 Gomme</button>
+                        </div>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>6. Zoom & Tramage</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="range" id="zoomRange" min="200" max="1200" value="600" style="flex:1;">
+                            <span id="zoomVal" style="font-size: 0.8rem; color: var(--text-sub);">600px</span>
+                        </div>
+                        <label class="checkbox-label" style="margin-top:6px;"><input type="checkbox" id="ditherToggle"> Activer le Tramage</label>
+                        <label class="checkbox-label" style="margin-top:6px;"><input type="checkbox" id="removeBgToggle"> Supprimer le Fond Uni</label>
+                        <div id="bgTolContainer" class="hidden" style="margin-top: 6px;">
+                            <span style="font-size: 0.75rem; color: var(--text-sub);">Sensibilité :</span>
+                            <input type="range" id="bgTolInput" min="1" max="100" value="25" style="width:100%">
+                        </div>
+                    </div>
+
+                    <div class="control-block">
+                        <h3>7. Palette WPLACE</h3>
+                        <div class="palette-filter-grid">
+                            <button class="btn-filter" id="btnAll">Tout</button>
+                            <button class="btn-filter" id="btnNone">Aucun</button>
+                            <button class="btn-filter" id="btnFree">Gratuites</button>
+                            <button class="btn-filter" id="btnPay">Payantes</button>
+                        </div>
+                        <div class="palette-scroll" id="paletteList"></div>
+                    </div>
+                </div>
+
+                <div class="preview-area">
+                    <div id="loading" class="loading-overlay hidden">Traitement...</div>
+                    <div class="canvas-container">
+                        <p id="placeholder" style="color: var(--text-sub); font-size: 0.9rem;">Importez une image</p>
+                        <canvas id="pixelCanvas" class="hidden"></canvas>
+                    </div>
+
+                    <div class="toolbar-bottom hidden" id="toolbar">
+                        <div class="stat-item">Grille: <strong id="statDim">0 x 0</strong> px</div>
+                        <div class="stat-item">Total: <strong id="statTotal">0</strong></div>
+                        <button class="btn-action" id="downloadBtn">Télécharger</button>
+                        <button class="btn-action" id="publishBtn" style="background:var(--accent);">Publier</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2 : ESPACE PARTAGE -->
+        <div id="shareView" class="page-view">
+            <div class="share-container">
+                <div class="share-header">
+                    <div>
+                        <h3 style="font-size: 1.3rem; color:#fff;">Templates WPLACE Partagés</h3>
+                        <p style="font-size: 0.85rem; color:var(--text-sub);">Recherchez par nom d'auteur pour télécharger et aider</p>
+                    </div>
+                    <div style="width: 300px;">
+                        <input type="text" id="searchInput" placeholder="Rechercher par auteur..." style="width:100%;">
+                    </div>
+                </div>
+
+                <div class="share-grid" id="templatesGrid"></div>
+            </div>
+        </div>
+
+        <!-- PAGE 3 : CALCULATEUR DE RAID -->
+        <div id="calcView" class="page-view">
+            <div class="calc-container">
+                <div class="calc-card">
+                    <h3 style="font-size: 1.2rem; color: #fff; border-bottom: 1px solid var(--panel-border); padding-bottom: 10px;">Calculateur de Pixels (Raid WPLACE)</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-sub);">Règle de régénération : 1 pixel toutes les 30 secondes.</p>
+
+                    <div class="form-group">
+                        <label>Vos pixels actuels</label>
+                        <input type="number" id="calcCurrent" value="50" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Votre stock maximum de pixels (Capacité max)</label>
+                        <input type="number" id="calcMax" value="200" min="1">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Date et Heure du Raid</label>
+                        <input type="datetime-local" id="calcDate">
+                    </div>
+
+                    <div class="calc-result-box">
+                        <span style="font-size: 0.8rem; color: var(--text-sub); text-transform: uppercase; font-weight: 700;">Prédiction pour le Raid</span>
+                        <div class="result-status" id="calcStatusText">—</div>
+                        <p id="calcDetailsText" style="font-size: 0.9rem; color: var(--text-main);">Remplissez les informations ci-dessus pour calculer.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONNEXION
+        const USERS = { "test": "test" };
+        let currentUser = null;
+
+        const loginOverlay = document.getElementById('loginOverlay');
+        const loginBtn = document.getElementById('loginBtn');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginError = document.getElementById('loginError');
+        const currentUserName = document.getElementById('currentUserName');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        loginBtn.addEventListener('click', () => {
+            const u = usernameInput.value.trim();
+            const p = passwordInput.value.trim();
+            if (USERS[u] && USERS[u] === p) {
+                currentUser = u;
+                currentUserName.textContent = u;
+                loginOverlay.classList.add('hidden');
+            } else {
+                loginError.classList.add('hidden');
+                loginError.classList.remove('hidden');
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => {
+            currentUser = null;
+            usernameInput.value = '';
+            passwordInput.value = '';
+            loginError.classList.add('hidden');
+            loginOverlay.classList.remove('hidden');
+        });
+
+        // NAVIGATION
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageViews = document.querySelectorAll('.page-view');
+        const headerTitle = document.getElementById('headerTitle');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                navItems.forEach(n => n.classList.remove('active'));
+                pageViews.forEach(p => p.classList.remove('active'));
+                
+                item.classList.add('active');
+                const targetId = item.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+                
+                if(targetId === 'converterView') headerTitle.textContent = "Convertisseur WPLACE";
+                else if(targetId === 'shareView') headerTitle.textContent = "Espace Partage de Templates";
+                else if(targetId === 'calcView') headerTitle.textContent = "Calculateur de Raid WPLACE";
+            });
+        });
+
+        // CALCULATEUR DE RAID LOGIQUE
+        const calcCurrent = document.getElementById('calcCurrent');
+        const calcMax = document.getElementById('calcMax');
+        const calcDate = document.getElementById('calcDate');
+        const calcStatusText = document.getElementById('calcStatusText');
+        const calcDetailsText = document.getElementById('calcDetailsText');
+
+        // Mettre une date par défaut à +2 heures dans le input datetime-local
+        const defaultDate = new Date(Date.now() + 2 * 60 * 60 * 1000);
+        calcDate.value = defaultDate.toISOString().slice(0, 16);
+
+        function updateRaidCalculator() {
+            const current = parseInt(calcCurrent.value) || 0;
+            const max = parseInt(calcMax.value) || 100;
+            const raidTime = new Date(calcDate.value).getTime();
+            const now = Date.now();
+
+            if (isNaN(raidTime)) return;
+
+            const diffSeconds = Math.max(0, Math.floor((raidTime - now) / 1000));
+            // 1 pixel toutes les 30 secondes
+            const generatedPixels = Math.floor(diffSeconds / 30);
+            const totalProjected = Math.min(max, current + generatedPixels);
+
+            if (totalProjected >= max) {
+                calcStatusText.textContent = "OUI (Stock Maximum Atteint !)";
+                calcStatusText.className = "result-status status-yes";
+                
+                // Calculer quand le max sera atteint exactement
+                const secondsToMax = Math.max(0, (max - current) * 30);
+                const maxReachedDate = new Date(now + secondsToMax * 1000);
+                calcDetailsText.innerHTML = `Tu seras au max (${max} pixels) le <strong>${maxReachedDate.toLocaleString()}</strong>. Parfait pour le raid !`;
+            } else {
+                calcStatusText.textContent = "NON (Stock incomplet)";
+                calcStatusText.className = "result-status status-no";
+                calcDetailsText.innerHTML = `Au moment du raid, tu auras <strong>${totalProjected} / ${max}</strong> pixels. Il te manquera <strong>${max - totalProjected}</strong> pixels.`;
+            }
+        }
+
+        calcCurrent.addEventListener('input', updateRaidCalculator);
+        calcMax.addEventListener('input', updateRaidCalculator);
+        calcDate.addEventListener('input', updateRaidCalculator);
+        updateRaidCalculator();
+
+        // TEMPLATES SYSTEM
+        let sharedTemplates = [];
+        const templatesGrid = document.getElementById('templatesGrid');
+        const searchInput = document.getElementById('searchInput');
+        const publishBtn = document.getElementById('publishBtn');
+
+        function renderTemplates(filter = "") {
+            templatesGrid.innerHTML = '';
+            const filtered = sharedTemplates.filter(t => t.author.toLowerCase().includes(filter.toLowerCase()) || t.name.toLowerCase().includes(filter.toLowerCase()));
+            
+            if (filtered.length === 0) {
+                templatesGrid.innerHTML = `<p style="color:var(--text-sub);">Aucun template publié pour le moment. Soyez le premier !</p>`;
+                return;
+            }
+
+            filtered.forEach(tmpl => {
+                const card = document.createElement('div');
+                card.className = 'template-card';
+                card.innerHTML = `
+                    <div class="template-preview-box">
+                        <img src="${tmpl.dataUrl}" alt="Template">
+                    </div>
+                    <div>
+                        <h4 style="font-size:1rem; color:#fff;">${tmpl.name}</h4>
+                        <span style="font-size:0.75rem; color:var(--text-sub);">Auteur : <strong>${tmpl.author}</strong> | Grille : ${tmpl.dim}</span>
+                    </div>
+                    <div class="template-actions">
+                        <button class="btn-secondary" onclick="previewTemplate('${tmpl.name}', '${tmpl.dataUrl}')">Prévisualiser</button>
+                        <a href="${tmpl.dataUrl}" download="${tmpl.name}.png" class="btn-secondary" style="background:var(--success); border:none; color:#fff;">Télécharger</a>
+                    </div>
+                `;
+                templatesGrid.appendChild(card);
+            });
+        }
+
+        window.previewTemplate = function(name, url) {
+            document.getElementById('modalTitle').textContent = name;
+            document.getElementById('modalImg').src = url;
+            document.getElementById('previewModal').classList.remove('hidden');
+        }
+
+        searchInput.addEventListener('input', (e) => renderTemplates(e.target.value));
+
+        publishBtn.addEventListener('click', () => {
+            if (!loadedImage) return;
+            const newTmpl = {
+                id: Date.now(),
+                author: currentUser || "Inconnu",
+                name: `Template de ${currentUser} (${statDim.textContent})`,
+                dataUrl: pixelCanvas.toDataURL('image/png'),
+                dim: statDim.textContent
+            };
+            sharedTemplates.unshift(newTmpl);
+            renderTemplates();
+            alert("Template publié avec succès !");
+        });
+
+        // CONVERTISSEUR & ZOOMS
+        const pixelInput = document.getElementById('pixelInput');
+        const pixelRange = document.getElementById('pixelRange');
+        const zoomRange = document.getElementById('zoomRange');
+        const zoomVal = document.getElementById('zoomVal');
+        const pixelCanvas = document.getElementById('pixelCanvas');
+        const algoSelect = document.getElementById('algoSelect');
+
+        let brightnessOffset = 0;
+
+        document.getElementById('btnBrighter').addEventListener('click', () => {
+            brightnessOffset += 15;
+            triggerRender();
+        });
+
+        document.getElementById('btnDarker').addEventListener('click', () => {
+            brightnessOffset -= 15;
+            triggerRender();
+        });
+
+        pixelRange.addEventListener('input', (e) => {
+            pixelInput.value = e.target.value;
+            triggerRender();
+        });
+
+        pixelInput.addEventListener('input', (e) => {
+            pixelRange.value = e.target.value;
+            triggerRender();
+        });
+
+        algoSelect.addEventListener('change', triggerRender);
+
+        zoomRange.addEventListener('input', (e) => {
+            const val = e.target.value;
+            zoomVal.textContent = val + 'px';
+            document.documentElement.style.setProperty('--zoom-size', val + 'px');
+        });
+
+        // MODE ÉDITION MANUELLE
+        let editMode = false;
+        let currentTool = 'pencil';
+        let selectedDrawColor = [0, 0, 0];
+        let isDrawing = false;
+
+        const btnEditMode = document.getElementById('btnEditMode');
+        const editTools = document.getElementById('editTools');
+        const toolPencil = document.getElementById('toolPencil');
+        const toolEraser = document.getElementById('toolEraser');
+
+        btnEditMode.addEventListener('click', () => {
+            editMode = !editMode;
+            btnEditMode.classList.toggle('active', editMode);
+            btnEditMode.textContent = editMode ? "✏️ Mode Édition ACTIF" : "✏️ Activer Edit Mode";
+            editTools.classList.toggle('hidden', !editMode);
+            pixelCanvas.classList.toggle('edit-mode', editMode);
+        });
+
+        toolPencil.addEventListener('click', () => {
+            currentTool = 'pencil';
+            toolPencil.classList.add('active');
+            toolEraser.classList.remove('active');
+        });
+
+        toolEraser.addEventListener('click', () => {
+            currentTool = 'eraser';
+            toolEraser.classList.add('active');
+            toolPencil.classList.remove('active');
+        });
+
+        function drawPixel(e) {
+            if (!editMode || !isDrawing) return;
+            const rect = pixelCanvas.getBoundingClientRect();
+            const scaleX = pixelCanvas.width / rect.width;
+            const scaleY = pixelCanvas.height / rect.height;
+
+            const x = Math.floor((e.clientX - rect.left) * scaleX);
+            const y = Math.floor((e.clientY - rect.top) * scaleY);
+
+            if (x >= 0 && x < pixelCanvas.width && y >= 0 && y < pixelCanvas.height) {
+                const ctx = pixelCanvas.getContext('2d');
+                if (currentTool === 'pencil') {
+                    ctx.fillStyle = `rgb(${selectedDrawColor[0]},${selectedDrawColor[1]},${selectedDrawColor[2]})`;
+                    ctx.fillRect(x, y, 1, 1);
+                } else {
+                    ctx.clearRect(x, y, 1, 1);
+                }
+            }
+        }
+
+        pixelCanvas.addEventListener('mousedown', (e) => { isDrawing = true; drawPixel(e); });
+        pixelCanvas.addEventListener('mousemove', drawPixel);
+        window.addEventListener('mouseup', () => { isDrawing = false; });
+
+        // PALETTE & ALGORITHMES
+        const WPLACE_COLORS = [
+            { name: "Noir", hex: "#000000", free: true }, { name: "Gris Foncé", hex: "#3C3C3C", free: true },
+            { name: "Gris", hex: "#787878", free: true }, { name: "Gris Clair", hex: "#D2D2D2", free: true },
+            { name: "Blanc", hex: "#FFFFFF", free: true }, { name: "Rouge Profond", hex: "#600018", free: true },
+            { name: "Rouge", hex: "#ED1C24", free: true }, { name: "Orange", hex: "#FF7F27", free: true },
+            { name: "Or", hex: "#F6AA09", free: true }, { name: "Jaune", hex: "#F9DD3B", free: true },
+            { name: "Jaune Clair", hex: "#FFFABC", free: true }, { name: "Vert Foncé", hex: "#0EB968", free: true },
+            { name: "Vert", hex: "#13E67B", free: true }, { name: "Vert Clair", hex: "#87FF5E", free: true },
+            { name: "Teal Foncé", hex: "#0C816E", free: true }, { name: "Teal", hex: "#10AEA6", free: true },
+            { name: "Teal Clair", hex: "#13E1BE", free: true }, { name: "Cyan", hex: "#60F7F2", free: true },
+            { name: "Bleu Foncé", hex: "#28509E", free: true }, { name: "Bleu", hex: "#4093E4", free: true },
+            { name: "Indigo", hex: "#6B50F6", free: true }, { name: "Indigo Clair", hex: "#99B1FB", free: true },
+            { name: "Violet Foncé", hex: "#780C99", free: true }, { name: "Violet", hex: "#AA38B9", free: true },
+            { name: "Violet Clair", hex: "#E09FF9", free: true }, { name: "Rose Foncé", hex: "#CB007A", free: true },
+            { name: "Rose", hex: "#EC1F80", free: true }, { name: "Rose Clair", hex: "#F38DA9", free: true },
+            { name: "Marron Foncé", hex: "#684634", free: true }, { name: "Marron", hex: "#95682A", free: true },
+            { name: "Beige", hex: "#F8B277", free: true }, { name: "Gris Moyen", hex: "#AAAAAA", free: false },
+            { name: "Rouge Sombre", hex: "#A50E1E", free: false }, { name: "Rouge Clair", hex: "#FA8072", free: false },
+            { name: "Orange Foncé", hex: "#E45C1A", free: false }, { name: "Jaune Ambré Foncé", hex: "#9C8431", free: false },
+            { name: "Jaune Ambré", hex: "#C5AD31", free: false }, { name: "Jaune Ambré Clair", hex: "#E8D45F", free: false },
+            { name: "Olive Foncé", hex: "#4A6B3A", free: false }, { name: "Olive", hex: "#5A944A", free: false },
+            { name: "Olive Clair", hex: "#84C573", free: false }, { name: "Cyan Foncé", hex: "#0F799F", free: false },
+            { name: "Cyan Pastel", hex: "#BBFAF2", free: false }, { name: "Bleu Ciel", hex: "#7DC7FF", free: false },
+            { name: "Indigo Foncé", hex: "#4D31B8", free: false }, { name: "Ardoise Foncé", hex: "#4A4284", free: false },
+            { name: "Ardoise", hex: "#7A71C4", free: false }, { name: "Ardoise Clair", hex: "#B5AEF1", free: false },
+            { name: "Pêche Foncé", hex: "#9B5249", free: false }, { name: "Pêche", hex: "#D18078", free: false },
+            { name: "Pêche Clair", hex: "#FAB6A4", free: false }, { name: "Marron Clair", hex: "#DBA463", free: false },
+            { name: "Ocre Foncé", hex: "#7B6352", free: false }, { name: "Ocre", hex: "#9C846B", free: false },
+            { name: "Ocre Clair", hex: "#D6B594", free: false }, { name: "Beige Foncé", hex: "#D18051", free: false },
+            { name: "Beige Clair", hex: "#FFC5A5", free: false }, { name: "Pierre Foncé", hex: "#6D643F", free: false },
+            { name: "Pierre", hex: "#948C6B", free: false }, { name: "Pierre Clair", hex: "#CDC59E", free: false },
+            { name: "Schiste Foncé", hex: "#333941", free: false }, { name: "Schiste", hex: "#6D758D", free: false },
+            { name: "Schiste Clair", hex: "#B3B9D1", free: false }
+        ];
+
+        function hexToRgb(hex) {
+            const num = parseInt(hex.replace('#', ''), 16);
+            return [num >> 16, (num >> 8) & 255, num & 255];
+        }
+
+        function rgbToLab(r, g, b) {
+            let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+            r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
+            g1 = g1 > 0.04045 ? Math.pow((g1 + 0.055) / 1.055, 2.4) : g1 / 12.92;
+            b1 = b1 > 0.04045 ? Math.pow((b1 + 0.055) / 1.055, 2.4) : b1 / 12.92;
+            let x = (r1 * 0.4124 + g1 * 0.3576 + b1 * 0.1805) / 0.95047;
+            let y = (r1 * 0.2126 + g1 * 0.7152 + b1 * 0.0722) / 1.00000;
+            let z = (r1 * 0.0193 + g1 * 0.1192 + b1 * 0.9505) / 1.08883;
+            x = x > 0.008856 ? Math.pow(x, 1/3) : (7.787 * x) + 16/116;
+            y = y > 0.008856 ? Math.pow(y, 1/3) : (7.787 * y) + 16/116;
+            z = z > 0.008856 ? Math.pow(z, 1/3) : (7.787 * z) + 16/116;
+            return [(116 * y) - 16, 500 * (x - y), 200 * (y - z)];
+        }
+
+        const processedPalette = WPLACE_COLORS.map(c => {
+            const rgb = hexToRgb(c.hex);
+            return { ...c, rgb, lab: rgbToLab(rgb[0], rgb[1], rgb[2]), active: true };
+        });
+
+        let loadedImage = null;
+        let isProcessing = false;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+        const paletteList = document.getElementById('paletteList');
+        const placeholder = document.getElementById('placeholder');
+        const toolbar = document.getElementById('toolbar');
+        const statDim = document.getElementById('statDim');
+        const statTotal = document.getElementById('statTotal');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const ditherToggle = document.getElementById('ditherToggle');
+        const removeBgToggle = document.getElementById('removeBgToggle');
+        const bgTolContainer = document.getElementById('bgTolContainer');
+        const bgTolInput = document.getElementById('bgTolInput');
+        const loading = document.getElementById('loading');
+
+        function renderPaletteUI() {
+            paletteList.innerHTML = '';
+            processedPalette.forEach((col, idx) => {
+                const row = document.createElement('div');
+                row.className = 'color-row';
+                row.innerHTML = `
+                    <div class="color-left">
+                        <input type="checkbox" id="c-${idx}" ${col.active ? 'checked' : ''}>
+                        <div class="color-swatch" style="background:${col.hex}"></div>
+                        <span class="color-name">${col.name}</span>
+                    </div>
+                    <span class="badge-type ${col.free ? 'type-free' : 'type-pay'}">${col.free ? 'Gratuit' : 'Payant'}</span>
+                `;
+                const chk = row.querySelector('input');
+                row.addEventListener('click', (e) => {
+                    if(e.target !== chk) chk.checked = !chk.checked;
+                    processedPalette[idx].active = chk.checked;
+                    selectedDrawColor = col.rgb;
+                    document.querySelectorAll('.color-row').forEach(r => r.classList.remove('selected-draw'));
+                    row.classList.add('selected-draw');
+                    triggerRender();
+                });
+                paletteList.appendChild(row);
+            });
+        }
+
+        document.getElementById('btnAll').addEventListener('click', () => setFilter(() => true));
+        document.getElementById('btnNone').addEventListener('click', () => setFilter(() => false));
+        document.getElementById('btnFree').addEventListener('click', () => setFilter(c => c.free));
+        document.getElementById('btnPay').addEventListener('click', () => setFilter(c => !c.free));
+
+        function setFilter(fn) {
+            processedPalette.forEach(c => c.active = fn(c));
+            renderPaletteUI();
+            triggerRender();
+        }
+
+        removeBgToggle.addEventListener('change', () => {
+            bgTolContainer.classList.toggle('hidden', !removeBgToggle.checked);
+            triggerRender();
+        });
+
+        bgTolInput.addEventListener('input', triggerRender);
+        ditherToggle.addEventListener('change', triggerRender);
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => e.preventDefault());
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) loadImage(e.target.files[0]);
+        });
+
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    loadedImage = img;
+                    placeholder.classList.add('hidden');
+                    pixelCanvas.classList.remove('hidden');
+                    toolbar.classList.remove('hidden');
+                    triggerRender();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function triggerRender() {
+            if (!loadedImage || isProcessing) return;
+            isProcessing = true;
+            loading.classList.remove('hidden');
+
+            setTimeout(() => {
+                render();
+                loading.classList.add('hidden');
+                isProcessing = false;
+            }, 20);
+        }
+
+        function getClosestColor(r, g, b, activeColors, method) {
+            let minDist = Infinity;
+            let closest = activeColors[0];
+
+            for (let i = 0; i < activeColors.length; i++) {
+                const c = activeColors[i];
+                let dist = 0;
+
+                if (method === 'ciede2000' || method === 'cielab') {
+                    const lab1 = rgbToLab(r, g, b);
+                    const lab2 = c.lab;
+                    dist = Math.pow(lab1[0] - lab2[0], 2) + Math.pow(lab1[1] - lab2[1], 2) + Math.pow(lab1[2] - lab2[2], 2);
+                } else if (method === 'redmean') {
+                    const rmean = (r + c.rgb[0]) / 2;
+                    const dr = r - c.rgb[0], dg = g - c.rgb[1], db = b - c.rgb[2];
+                    dist = (2 + rmean/256) * dr*dr + 4 * dg*dg + (2 + (255-rmean)/256) * db*db;
+                } else if (method === 'rgb') {
+                    dist = Math.pow(r - c.rgb[0], 2) + Math.pow(g - c.rgb[1], 2) + Math.pow(b - c.rgb[2], 2);
+                } else if (method === 'manhattan') {
+                    dist = Math.abs(r - c.rgb[0]) + Math.abs(g - c.rgb[1]) + Math.abs(b - c.rgb[2]);
+                }
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = c;
+                }
+            }
+            return closest.rgb;
+        }
+
+        function removeSmartBackground(data, width, height, tolerance) {
+            const visited = new Uint8Array(width * height);
+            const queue = [];
+            const cornerIndices = [0, width - 1, (height - 1) * width, height * width - 1];
+
+            function colorDiff(idx1, idx2) {
+                return Math.abs(data[idx1] - data[idx2]) + Math.abs(data[idx1+1] - data[idx2+1]) + Math.abs(data[idx1+2] - data[idx2+2]);
+            }
+
+            let refR = 0, refG = 0, refB = 0;
+            cornerIndices.forEach(ci => {
+                refR += data[ci * 4]; refG += data[ci * 4 + 1]; refB += data[ci * 4 + 2];
+            });
+            refR /= 4; refG /= 4; refB /= 4;
+
+            cornerIndices.forEach(idx => {
+                queue.push(idx);
+                visited[idx] = 1;
+            });
+
+            const maxDiff = tolerance * 4.5;
+
+            while (queue.length > 0) {
+                const curr = queue.shift();
+                const currIdx = curr * 4;
+                const diffFromRef = Math.abs(data[currIdx] - refR) + Math.abs(data[currIdx+1] - refG) + Math.abs(data[currIdx+2] - refB);
+                
+                if (diffFromRef <= maxDiff * 1.5) {
+                    data[currIdx + 3] = 0;
+                    const x = curr % width;
+                    const y = Math.floor(curr / width);
+
+                    const neighbors = [];
+                    if (x > 0) neighbors.push(curr - 1);
+                    if (x < width - 1) neighbors.push(curr + 1);
+                    if (y > 0) neighbors.push(curr - width);
+                    if (y < height - 1) neighbors.push(curr + width);
+
+                    neighbors.forEach(nIdx => {
+                        if (!visited[nIdx]) {
+                            visited[nIdx] = 1;
+                            if (colorDiff(currIdx, nIdx * 4) <= maxDiff) {
+                                queue.push(nIdx);
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        function render() {
+            const activeColors = processedPalette.filter(c => c.active);
+            if (activeColors.length === 0) return;
+
+            let maxPixels = parseInt(pixelInput.value) || 120;
+            if (maxPixels < 1) maxPixels = 1;
+            if (maxPixels > 3000) maxPixels = 3000;
+
+            let width = loadedImage.width;
+            let height = loadedImage.height;
+
+            if (width > height) {
+                height = Math.round((height * maxPixels) / width);
+                width = maxPixels;
+            } else {
+                width = Math.round((width * maxPixels) / height);
+                height = maxPixels;
+            }
+
+            pixelCanvas.width = width;
+            pixelCanvas.height = height;
+
+            statDim.textContent = `${width} x ${height}`;
+            statTotal.textContent = (width * height).toLocaleString();
+
+            const ctx = pixelCanvas.getContext('2d');
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(loadedImage, 0, 0, width, height);
+
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+
+            if (brightnessOffset !== 0) {
+                for (let i = 0; i < data.length; i += 4) {
+                    data[i] = Math.min(255, Math.max(0, data[i] + brightnessOffset));
+                    data[i+1] = Math.min(255, Math.max(0, data[i+1] + brightnessOffset));
+                    data[i+2] = Math.min(255, Math.max(0, data[i+2] + brightnessOffset));
+                }
+            }
+
+            if (removeBgToggle.checked) {
+                removeSmartBackground(data, width, height, parseInt(bgTolInput.value));
+            }
+
+            const useDither = ditherToggle.checked;
+            const selectedAlgo = algoSelect.value;
+
+            if (!useDither) {
+                for (let i = 0; i < data.length; i += 4) {
+                    if (data[i + 3] < 128) continue;
+                    const [r, g, b] = getClosestColor(data[i], data[i+1], data[i+2], activeColors, selectedAlgo);
+                    data[i] = r; data[i+1] = g; data[i+2] = b;
+                }
+            } else {
+                let errors = new Float32Array(data.length);
+                for(let i = 0; i < data.length; i++) errors[i] = data[i];
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+                        if (data[idx + 3] < 128) continue;
+
+                        let oldR = Math.min(255, Math.max(0, errors[idx]));
+                        let oldG = Math.min(255, Math.max(0, errors[idx + 1]));
+                        let oldB = Math.min(255, Math.max(0, errors[idx + 2]));
+
+                        const [newR, newG, newB] = getClosestColor(oldR, oldG, oldB, activeColors, selectedAlgo);
+                        data[idx] = newR; data[idx + 1] = newG; data[idx + 2] = newB;
+
+                        let errR = oldR - newR, errG = oldG - newG, errB = oldB - newB;
+
+                        if (x + 1 < width) {
+                            let n = idx + 4;
+                            errors[n] += errR * 7/16; errors[n+1] += errG * 7/16; errors[n+2] += errB * 7/16;
+                        }
+                        if (y + 1 < height) {
+                            if (x > 0) {
+                                let n = idx + (width - 1) * 4;
+                                errors[n] += errR * 3/16; errors[n+1] += errG * 3/16; errors[n+2] += errB * 3/16;
+                            }
+                            let n2 = idx + width * 4;
+                            errors[n2] += errR * 5/16; errors[n2+1] += errG * 5/16; errors[n2+2] += errB * 5/16;
+                            if (x + 1 < width) {
+                                let n3 = idx + (width + 1) * 4;
+                                errors[n3] += errR * 1/16; errors[n3+1] += errG * 1/16; errors[n3+2] += errB * 1/16;
+                            }
+                        }
+                    }
+                }
+            }
+
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        downloadBtn.addEventListener('click', () => {
+            const a = document.createElement('a');
+            a.download = `wplace-template-${pixelInput.value}px.png`;
+            a.href = pixelCanvas.toDataURL('image/png');
+            a.click();
+        });
+
+        renderPaletteUI();
+        renderTemplates();
+    </script>
+</body>
+</html>
+
